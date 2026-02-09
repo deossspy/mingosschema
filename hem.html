@@ -286,10 +286,56 @@
       padding: 40px; height: 100vh; box-sizing: border-box; 
     }
     
-    #poster { 
-      width: 1080px; background: #fff; padding: 60px; border-radius: 12px; 
-      box-shadow: 0 40px 100px rgba(0,0,0,0.1); transform: scale(0.65); 
-    }
+    /* Instagram Portrait Ratio (4:5) */
+#poster { 
+  width: 1080px; 
+  height: 1350px; /* Locked height for consistency */
+  background: #fff; 
+  padding: 80px 60px; /* Extra breathing room */
+  border-radius: 0; /* Flat edges look better for full-bleed IG posts */
+  box-shadow: 0 30px 90px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  transform-origin: center center;
+}
+
+/* Ensure the schedule area expands to fill the space nicely */
+.schedule { 
+  margin-top: 60px; 
+  flex-grow: 1; /* Pushes content to fill the 1350px height */
+  display: flex;
+  flex-direction: column;
+  border-top: 4px solid #1c1c1e; 
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 4fr;
+  flex-grow: 1; /* Each row stretches equally */
+  align-items: center;
+}
+
+.cell { 
+  padding: 20px 16px; 
+  border-bottom: 2px solid #f2f2f7; 
+  font-size: 24px; 
+}
+
+/* Add a subtle watermark/footer for branding */
+#poster::after {
+  content: "Kontakta Josefina för mer info: 073-558 96 47 el. josefina.ros@skelleftea.se";
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #c7c7cc;
+  letter-spacing: 1px;
+}
 
     /* --- MODAL GLASS --- */
     .modal-overlay {
@@ -503,7 +549,7 @@
         <div id="archiveList"></div>
         <button class="btn save-week-btn" onclick="openSaveModal()">Spara vecka i arkiv</button>
     </div>
-    <div style="font-size: 16px; font-weight: 100;" id="weekText">deo inc.</div>
+    <div style="font-size: 16px; font-weight: 100;" id="">deo inc.</div>
   </div>
 
   <div class="preview">
