@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <title>MINGOS Schema</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23f1c232%22/><text y=%22.9em%22 x=%22.15em%22 font-size=%2270%22 font-weight=%22900%22 fill=%22white%22 font-family=%22sans-serif%22>M</text></svg>">
+  
+  <style>
+    :root { 
+      --mingos-color: #f1c232; 
+      --accent: #007aff;
+      --easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --danger: #ff3b30;
+      --success: #34c759;
+      --glass: rgba(255, 255, 255, 0.4);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --ios-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      background: #e5e5ea00;
+      color: #1c1c1e;
+      overflow: hidden;
+      height: 100vh;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -50%;
+      z-index: -1;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(241, 194, 50, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(0, 122, 255, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, #f5f5f7 0%, #d1d1d6 100%);
+      filter: blur(60px);
+    }
+
+    /* --- GLASS LOCK SCREEN --- */
+    #lock-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(60px) saturate(200%);
+      -webkit-backdrop-filter: blur(60px) saturate(200%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9000;
+      transition: all 0.8s var(--easing);
+    }
+
+    .lock-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border);
+      padding: 40px;
+      border-radius: 50px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      width: 320px;
+      text-align: center;
+      animation: popIn 0.6s var(--easing);
+    }
+
+    .lock-card h2 { margin: 0 0 8px 0; font-weight: 800; letter-spacing: -1px; }
+    .lock-card p { color: #48484a; font-size: 14px; margin-bottom: 24px; }
+
+    .passcode-dots {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.1);
+      transition: all 0.3s var(--easing);
+    }
+    .dot.active { background: var(--mingos-color); transform: scale(1.3); box-shadow: 0 0 15px var(--mingos-color); }
+
+    .forgot-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 20px;
+      opacity: 0.7;
+    }
+    .forgot-btn:hover { opacity: 1; text-decoration: underline; }
+
+    /* Hidden input to capture typing */
+    #passcode-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* --- BUBBLY INTRO SCREEN --- */
+    #intro-screen {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s var(--easing), visibility 0.8s;
+    }
+
+    .intro-logo {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* --- BUBBLY INTRO SCREEN --- */
+    #intro-screen {
+      position: fixed;
+      inset: 0;
+      background: #f5f5f7;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s var(--easing), visibility 0.8s;
+    }
+
+    .intro-char {
+      font-size: 80px;
+      font-weight: 900;
+      color: var(--mingos-color);
+      display: inline-block;
+      animation: popIn 0.6s var(--easing) both;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+    .intro-subtext {
+      margin-top: 20px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #8e8e93;
+      opacity: 0;
+      animation: fadeIn 1s ease 0.8s forwards;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+      70% { transform: scale(1.2) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(-10px); }
+    }
+
+    .intro-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* --- LAYOUT --- */
+    .layout { display: grid; grid-template-columns: 420px 1fr; height: 100vh; }
+
+    .controls {
+      background: #fff;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid #e5e5ea;
+      height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .controls h2 { margin: 0 0 20px 0; font-weight: 800; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .day-settings {
+      background: #f9f9fb;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.04);
+      border: 1px solid #eee;
+      position: relative;
+      animation: slideIn 0.4s var(--easing) both;
+    }
+
+    .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    .remove-btn {
+      padding: 6px 12px; font-size: 11px; border-radius: 10px; border: none;
+      background: #ff3b3015; color: var(--danger); font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .remove-btn:hover { background: var(--danger); color: #fff; }
+
+    label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #8e8e93; margin-top: 12px; }
+
+    input, textarea {
+      width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px 12px;
+      border-radius: 12px; border: 1px solid #ddd; background: #fff; font-size: 14px;
+      transition: all 0.2s var(--easing);
+    }
+    input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.1); }
+
+    /* --- ARCHIVE GLASS --- */
+    .archive-container {
+        margin-top: auto;
+        padding: 25px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 35px;
+        border: 1px solid var(--glass-border);
+        margin-bottom: 20px;
+    }
+
+    .archive-item {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 14px 18px;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        margin-bottom: 10px;
+    }
+
+    /* The container for the animation */
+.delete-anim-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+/* 1. Bubble away the old content */
+.bubble-out {
+  animation: bubbleOut 0.5s var(--easing) forwards;
+}
+
+/* 2. The Verified Badge Swoosh/Bubble in */
+.verified-badge {
+  width: 50px;
+  height: 50px;
+  background: var(--success);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 8px 20px rgba(52, 199, 89, 0.3);
+  transform: scale(0);
+  animation: bubbleInSwoosh 0.6s var(--easing) 0.2s forwards;
+}
+
+@keyframes bubbleOut {
+  0% { transform: scale(1); opacity: 1; filter: blur(0); }
+  100% { transform: scale(1.4); opacity: 0; filter: blur(10px); }
+}
+
+@keyframes bubbleInSwoosh {
+  0% { transform: scale(0) translateY(20px) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.2) translateY(-5px) rotate(10deg); }
+  100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+}
+
+    /* --- PREVIEW AREA --- */
+    .preview { 
+      display: flex; justify-content: center; align-items: center; 
+      padding: 40px; height: 100vh; box-sizing: border-box; 
+    }
+    
+    #poster { 
+      width: 1080px; background: #fff; padding: 60px; border-radius: 12px; 
+      box-shadow: 0 40px 100px rgba(0,0,0,0.1); transform: scale(0.65); 
+    }
+
+    /* --- MODAL GLASS --- */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.1); backdrop-filter: blur(20px);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 10000; opacity: 0; pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: rgba(255,255,255,0.8); backdrop-filter: blur(30px);
+      padding: 35px; border-radius: 40px; width: 340px;
+      border: 1px solid #fff; box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .modal-overlay.active .modal { transform: scale(1); }
+    .modal h3 { margin: 0 0 10px 0; font-weight: 800; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px;}
+    .modal-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .modal-btn.cancel { background: #f2f2f7; color: #1c1c1e; }
+    .modal-btn.confirm { background: var(--danger); color: white; }
+    .modal-btn.confirm-save { background: var(--success); color: white; }
+
+    /* --- ARCHIVE STYLE --- */
+    .archive-container {
+        margin-top: auto;
+        padding: 20px;
+        background: #f2f2f7;
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+    .archive-container h3 { margin-top: 0; font-size: 16px; font-weight: 800; }
+    .archive-item {
+        background: #fff;
+        padding: 10px 14px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        animation: slideIn 0.3s var(--easing) both;
+    }
+    .archive-btns { display: flex; gap: 4px; }
+    .arch-btn { padding: 5px 8px; border-radius: 8px; border: none; font-size: 10px; cursor: pointer; font-weight: 700; }
+    .arch-load { background: var(--accent); color: white; }
+    .arch-del { background: #ff3b3015; color: var(--danger); }
+
+    /* --- BUTTONS & TOGGLES --- */
+    .section-toggles { display: flex; gap: 8px; margin-top: 12px; }
+    .toggle-btn {
+      flex: 1; padding: 10px; font-size: 12px; border-radius: 10px; border: 1px solid #ddd;
+      background: #fff; cursor: pointer; font-weight: 700; transition: 0.3s var(--easing);
+    }
+    .toggle-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .input-section-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s var(--easing), opacity 0.2s; opacity: 0; }
+    .input-section-wrapper.open { grid-template-rows: 1fr; opacity: 1; margin-top: 8px; }
+    .input-section { overflow: hidden; border-left: 3px solid var(--accent); padding-left: 12px; }
+
+    .btn { margin-top: 10px; width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-weight: 700; cursor: pointer; transition: 0.2s var(--easing); }
+    .save-week-btn { background: var(--success); margin-top: 15px; }
+
+    /* --- PREVIEW --- */
+    .preview { display: flex; justify-content: center; align-items: center; background: #d1d1d6; padding: 40px; height: 100vh; box-sizing: border-box; }
+    #poster { width: 1080px; background: #fff; padding: 60px; border-radius: 8px; box-shadow: 0 30px 90px rgba(0,0,0,0.2); transform: scale(0.65); }
+    .mingos { font-size: 160px; font-weight: 900; letter-spacing: 6px; color: var(--mingos-color); -webkit-text-stroke: 6px var(--mingos-color); text-shadow: 0 10px 24px rgba(0,0,0,.18); line-height: 1; margin: 10px 0; text-align: center; }
+    .schedule { margin-top: 48px; display: grid; grid-template-columns: 1.2fr 1.5fr 4fr; border-top: 3px solid #1c1c1e; }
+    .row { display: contents; }
+    .cell { padding: 24px 16px; border-bottom: 2px solid #eee; font-size: 22px; line-height: 1.4; }
+    .day-cell { font-weight: 800; font-size: 28px; }
+
+    /* AI SUGGESTION */
+    .ai-suggestion {
+      display: inline-flex; align-items: center; margin-top: 10px; padding: 6px 12px;
+      background: #007aff10; border: 1px solid #007aff30; border-radius: 30px; cursor: pointer;
+      animation: slideIn 0.5s var(--easing) 0.2s both;
+      transition: all 0.3s var(--easing);
+    }
+    /* --- ADAPTIVE LAYOUT --- */
+.layout { 
+  display: grid; 
+  grid-template-columns: minmax(320px, 420px) 1fr; /* Sidebar stays sane on wide screens */
+  height: 100vh; 
+  width: 100vw;
+}
+
+.controls {
+  background: #fff;
+  padding: 24px;
+  overflow-y: auto;
+  border-right: 1px solid #e5e5ea;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.preview { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  background: #d1d1d6; 
+  height: 100vh; 
+  overflow: hidden; /* Prevents scrollbars from the scaled poster */
+  position: relative;
+}
+
+/* --- SMART SCALING POSTER --- */
+#poster { 
+  width: 1080px; 
+  background: #fff; 
+  padding: 60px; 
+  border-radius: 8px; 
+  box-shadow: 0 30px 90px rgba(0,0,0,0.2);
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+
+/* Tablet/Laptop adjustment */
+@media (max-width: 1400px) {
+  #poster { transform: scale(0.5); }
+}
+
+@media (max-width: 1100px) {
+  #poster { transform: scale(0.4); }
+}
+
+/* Mobile fallback */
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .preview { display: none; } /* Hide preview on mobile edit mode */
+  .controls { width: 100%; }
+}
+    .ai-suggestion:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
+    .ai-suggestion svg { transition: 0.2s; }
+    .ai-suggestion:hover svg { fill: #fff; }
+    .ai-suggestion:hover .badge-text { color: #fff; }
+    .badge-text { font-size: 11px; font-weight: 800; color: #006ee6; margin-left: 6px; transition: 0.2s; }
+
+    .time-input-container { position: relative; }
+    .custom-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.98); border-radius: 12px; border: 1px solid #ddd;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 4px;
+      opacity: 0; transform: translateY(-10px); pointer-events: none; transition: 0.3s var(--easing);
+    }
+    .custom-dropdown.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .dropdown-item { padding: 10px 12px; font-size: 14px; cursor: pointer; }
+    .dropdown-item:hover { background: #f2f2f7; color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="intro-screen">
+  <div class="intro-logo">
+    <span class="intro-char" style="animation-delay: 0.1s">M</span>
+    <span class="intro-char" style="animation-delay: 0.2s">I</span>
+    <span class="intro-char" style="animation-delay: 0.3s">N</span>
+    <span class="intro-char" style="animation-delay: 0.4s">G</span>
+    <span class="intro-char" style="animation-delay: 0.5s">O</span>
+    <span class="intro-char" style="animation-delay: 0.6s">S</span>
+  </div>
+  <div class="intro-subtext">FRITIDSGÅRDEN</div>
+</div>
+
+<div id="lock-screen" onclick="document.getElementById('passcode-input').focus()">
+  <div class="lock-card">
+    <h2 id="lock-title">Välkommen</h2>
+    <p id="lock-desc">Ange din pinkod för att fortsätta</p>
+    <div class="passcode-dots" id="passcode-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <input type="password" id="passcode-input" maxlength="4" autofocus>
+    <button class="forgot-btn" onclick="showForgotCode()">Glömt koden?</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Titel</h3>
+    <p id="modalBody">Beskrivning</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Avbryt</button>
+      <button class="modal-btn confirm" id="modalConfirmBtn">Bekräfta</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="controls">
+    <h2>MINGOS Schema</h2>
+    <label>Färgtema</label>
+    <input type="color" id="color" value="#f1c232">
+    <label>Veckonummer</label>
+    <input type="number" id="week" value="6">
+
+    <div id="daysSettings" style="margin-top: 20px;"></div>
+    <div id="addButtons" style="margin-top: 10px;"></div>
+    
+    <button class="btn" onclick="downloadImage()" style="background: #1c1c1e; margin-bottom: 20px;">Ladda ner som bild</button>
+
+    <div class="archive-container">
+        <h3>Mina mappar (Arkiv)</h3>
+        <div id="archiveList"></div>
+        <button class="btn save-week-btn" onclick="openSaveModal()">Spara vecka i arkiv</button>
+    </div>
+    <div style="font-size: 16px; font-weight: 100;" id="weekText">deo inc.</div>
+  </div>
+
+  <div class="preview">
+    <div id="poster">
+      <div class="title" style="text-align: center;">
+        <div style="font-size: 40px; font-weight: 700;">Fritidsgården</div>
+        <div class="mingos">MINGOS</div>
+        <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 6</div>
+      </div>
+      <div class="schedule" id="schedule"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+// --- LOCK LOGIC ---
+const lockScreen = document.getElementById('lock-screen');
+const lockTitle = document.getElementById('lock-title');
+const lockDesc = document.getElementById('lock-desc');
+const passInput = document.getElementById('passcode-input');
+const dots = document.querySelectorAll('.dot');
+
+let masterCode = localStorage.getItem('mingos_passcode');
+
+function setupLock() {
+  if (!masterCode) {
+    lockTitle.innerText = "Ställ in kod";
+    lockDesc.innerText = "Skapa en 4-siffrig kod för att låsa verktyget.";
+  }
+}
+
+passInput.addEventListener('input', (e) => {
+  const val = e.target.value;
+  
+  // Update dots
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i < val.length);
+  });
+
+  if (val.length === 4) {
+    if (!masterCode) {
+      // Setting code for first time
+      localStorage.setItem('mingos_passcode', val);
+      masterCode = val;
+      unlock();
+    } else if (val === masterCode) {
+      unlock();
+    } else {
+      // Wrong code
+      lockScreen.style.animation = 'shake 0.4s';
+      setTimeout(() => lockScreen.style.animation = '', 400);
+      passInput.value = '';
+      dots.forEach(d => d.classList.remove('active'));
+    }
+  }
+});
+
+function unlock() {
+  lockScreen.style.opacity = '0';
+  lockScreen.style.pointerEvents = 'none';
+  lockScreen.style.transform = 'scale(1.1)';
+}
+
+function showForgotCode() {
+  document.getElementById('modalTitle').innerText = "Glömt koden?";
+  document.getElementById('modalBody').innerText = "Koden sparas lokalt i din webbläsare. För att återställa koden måste du rensa webbplatsens data. Detta kommer även radera ditt arkiv.";
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  confirmBtn.innerText = "Rensa Allt";
+  confirmBtn.onclick = () => {
+    localStorage.clear();
+    location.reload();
+  };
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+// --- INTRO HANDLER ---
+window.addEventListener('DOMContentLoaded', () => {
+  setupLock();
+  setTimeout(() => {
+    document.getElementById('intro-screen').classList.add('intro-hidden');
+    passInput.focus();
+  }, 2500);
+});
+
+const defaultWeeklySchedule = {
+  'Måndag': 'Stängt', 'Tisdag': '15:20 - 20:30', 'Onsdag': '19:00 - 20:30',
+  'Torsdag': '14:40 - 20:30', 'Fredag': '19:00 - 22:30', 'Lördag': 'Stängt', 'Söndag': 'Stängt'
+};
+const order = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'];
+const commonTimes = ["14:40 - 20:30", "15:20 - 20:30", "19:00 - 22:30", "Stängt"];
+let days = [];
+let dayToDelete = null;
+
+function init() {
+  renderAddButtons();
+  renderArchive();
+}
+
+/* --- MODAL LOGIC --- */
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function openRemoveModal(dayName) {
+  dayToDelete = dayName;
+  document.getElementById('modalTitle').innerText = "Ta bort dag?";
+  document.getElementById('modalBody').innerText = `Är du säker på att du vill ta bort ${dayName}?`;
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  confirmBtn.className = "modal-btn confirm";
+  confirmBtn.innerText = "Ta bort";
+  confirmBtn.onclick = confirmDelete;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function openSaveModal() {
+  const week = document.getElementById('week').value;
+  document.getElementById('modalTitle').innerText = "Spara vecka?";
+  document.getElementById('modalBody').innerText = `Vill du spara vecka ${week} i ditt arkiv?`;
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  confirmBtn.className = "modal-btn confirm-save";
+  confirmBtn.innerText = "Spara";
+  confirmBtn.onclick = saveToArchive;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+/* --- ARCHIVE LOGIC --- */
+function saveToArchive() {
+    const weekNum = document.getElementById('week').value;
+    const theme = document.getElementById('color').value;
+    const entry = { week: weekNum, theme: theme, days: JSON.parse(JSON.stringify(days)), id: Date.now() };
+    
+    let archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
+    archive.push(entry);
+    localStorage.setItem('mingos_archive', JSON.stringify(archive));
+    
+    renderArchive();
+    closeModal();
+}
+
+function renderArchive() {
+    const container = document.getElementById('archiveList');
+    const archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
+    container.innerHTML = archive.length ? '' : '<p style="color:#8e8e93; font-size:13px; margin: 10px 0;">Inga sparade veckor än.</p>';
+    
+    archive.slice().reverse().forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'archive-item';
+        div.innerHTML = `
+            <div>v.${item.week}</div>
+            <div class="archive-btns">
+                <button class="arch-btn arch-load" onclick="loadArchive(${item.id})">Öppna</button>
+                <button class="arch-btn arch-del" onclick="deleteArchive(${item.id})">Radera</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function loadArchive(id) {
+    const archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
+    const item = archive.find(i => i.id === id);
+    if (!item) return;
+
+    days = JSON.parse(JSON.stringify(item.days));
+    document.getElementById('week').value = item.week;
+    document.getElementById('color').value = item.theme;
+    
+    document.getElementById('daysSettings').innerHTML = '';
+    days.forEach(d => {
+        document.getElementById('daysSettings').appendChild(createDayCard(d));
+    });
+    
+    renderAddButtons();
+    update();
+}
+
+function deleteArchive(id) {
+    let archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
+    archive = archive.filter(i => i.id !== id);
+    localStorage.setItem('mingos_archive', JSON.stringify(archive));
+    renderArchive();
+}
+
+/* --- DAY MANAGEMENT --- */
+function confirmDelete() {
+  const name = dayToDelete;
+  const card = document.getElementById(`card-${name}`);
+  card.style.opacity = '0';
+  setTimeout(() => {
+    days = days.filter(d => d.name !== name);
+    card.remove();
+    renderAddButtons();
+    update();
+    closeModal();
+  }, 200);
+}
+
+function renderAddButtons() {
+  const container = document.getElementById('addButtons');
+  container.innerHTML = '';
+  order.forEach(dayName => {
+    if (!days.find(d => d.name === dayName)) {
+      const btn = document.createElement('button');
+      btn.className = 'btn secondary';
+      btn.style.background = '#e5e5ea';
+      btn.style.color = '#000';
+      btn.style.marginBottom = '8px';
+      btn.innerText = `+ Lägg till ${dayName}`;
+      btn.onclick = () => addDay(dayName);
+      container.appendChild(btn);
+    }
+  });
+}
+
+function addDay(name) {
+  const defaultAftLabel = (name === 'Torsdag') ? 'Tjejeftermiddag' : 'Eftermiddag';
+  
+  const newDay = {
+    name, time: defaultWeeklySchedule[name] || '',
+    showAfternoon: false, afterLabel: defaultAftLabel, afterText: '',
+    showEvening: false, eveLabel: 'Kväll', eveText: ''
+  };
+  days.push(newDay);
+  document.getElementById('daysSettings').appendChild(createDayCard(newDay));
+  renderAddButtons();
+  update();
+}
+
+function createDayCard(dayData) {
+  const div = document.createElement('div');
+  div.className = 'day-settings';
+  div.id = `card-${dayData.name}`;
+  const suggestedTime = defaultWeeklySchedule[dayData.name];
+  div.innerHTML = `
+    <div class="day-header">
+      <div style="font-size: 16px; font-weight: 800;">${dayData.name}</div>
+      <button class="remove-btn" onclick="openRemoveModal('${dayData.name}')">Ta bort</button>
+    </div>
+    <label>Öppettider</label>
+    <div class="time-input-container">
+      <input type="text" value="${dayData.time}" onclick="showDropdown('${dayData.name}')" id="input-${dayData.name}" oninput="updateDayData('${dayData.name}', 'time', this.value)">
+      <div class="custom-dropdown" id="dropdown-${dayData.name}">
+        ${commonTimes.map(t => `<div class="dropdown-item" onclick="selectTime('${dayData.name}', '${t}')">${t}</div>`).join('')}
+      </div>
+    </div>
+    <div class="ai-suggestion" onclick="selectTime('${dayData.name}', '${suggestedTime}')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#007aff"><path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.7l-3.61.81.34 3.7L1 12l2.44 2.79-.34 3.69 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z"/></svg>
+      <span class="badge-text">Föreslag: ${suggestedTime}</span>
+    </div>
+    <div class="section-toggles">
+      <button class="toggle-btn ${dayData.showAfternoon ? 'active' : ''}" onclick="togglePart('${dayData.name}', 'showAfternoon', this)">Eftermiddag</button>
+      <button class="toggle-btn ${dayData.showEvening ? 'active' : ''}" onclick="togglePart('${dayData.name}', 'showEvening', this)">Kväll</button>
+    </div>
+    <div class="input-section-wrapper ${dayData.showAfternoon ? 'open' : ''}" id="wrap-aft-${dayData.name}">
+      <div class="input-section">
+        <label>Rubrik</label><input value="${dayData.afterLabel}" oninput="updateDayData('${dayData.name}', 'afterLabel', this.value)">
+        <label>Beskrivning</label><textarea oninput="updateDayData('${dayData.name}', 'afterText', this.value)">${dayData.afterText}</textarea>
+      </div>
+    </div>
+    <div class="input-section-wrapper ${dayData.showEvening ? 'open' : ''}" id="wrap-eve-${dayData.name}">
+      <div class="input-section">
+        <label>Rubrik</label><input value="${dayData.eveLabel}" oninput="updateDayData('${dayData.name}', 'eveLabel', this.value)">
+        <label>Beskrivning</label><textarea oninput="updateDayData('${dayData.name}', 'eveText', this.value)">${dayData.eveText}</textarea>
+      </div>
+    </div>`;
+  return div;
+}
+
+function updateDayData(name, key, value) {
+  const day = days.find(d => d.name === name);
+  if (day) day[key] = value;
+  update();
+}
+
+function togglePart(name, prop, btn) {
+  const day = days.find(d => d.name === name);
+  day[prop] = !day[prop];
+  const wrapper = document.getElementById(prop === 'showAfternoon' ? `wrap-aft-${name}` : `wrap-eve-${name}`);
+  if (day[prop]) { wrapper.classList.add('open'); btn.classList.add('active'); }
+  else { wrapper.classList.remove('open'); btn.classList.remove('active'); }
+  update();
+}
+
+function selectTime(name, time) {
+  const day = days.find(d => d.name === name);
+  day.time = time;
+  document.getElementById(`input-${name}`).value = time;
+  update();
+}
+
+function showDropdown(dayName) {
+  document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('visible'));
+  document.getElementById(`dropdown-${dayName}`).classList.add('visible');
+}
+
+window.onclick = (e) => {
+  if (!e.target.matches('input')) document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('visible'));
+  if (e.target.id === 'modalOverlay') closeModal();
+}
+
+function renderSchedule() {
+  const s = document.getElementById('schedule');
+  s.innerHTML = '';
+  const sortedDays = [...days].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  sortedDays.forEach(d => {
+    let parts = [];
+    if (d.showAfternoon) parts.push(`<strong>${d.afterLabel}</strong><br>${d.afterText.replace(/\n/g, '<br>')}`);
+    if (d.showEvening) parts.push(`<strong>${d.eveLabel}</strong><br>${d.eveText.replace(/\n/g, '<br>')}`);
+    s.innerHTML += `
+    <div class="row">
+      <div class="cell day-cell">${d.name}</div>
+      <div class="cell">${d.time}</div>
+      <div class="cell">${parts.join('<br><br>')}</div>
+    </div>`;
+  });
+}
+
+function update() {
+  document.documentElement.style.setProperty('--mingos-color', document.getElementById('color').value);
+  document.getElementById('weekText').innerText = 'v. ' + document.getElementById('week').value;
+  renderSchedule();
+}
+
+document.getElementById('color').oninput = update;
+document.getElementById('week').oninput = update;
+init();
+
+async function downloadImage() {
+  const c = await html2canvas(document.getElementById('poster'), { scale: 2, useCORS: true });
+  const a = document.createElement('a');
+  a.download = `mingos_v${document.getElementById('week').value}.png`;
+  a.href = c.toDataURL('image/png');
+  a.click();
+}
+</script>
+
+<style>
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+</style>
+</body>
+</html>
