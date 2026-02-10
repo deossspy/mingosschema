@@ -904,7 +904,7 @@ async function downloadImage() {
     const btn = document.querySelector('button[onclick="downloadImage()"]');
 
     // Visual Feedback
-    btn.innerText = "Bereder för Instagram...";
+    btn.innerText = "Förbereder bild...";
     
     // THE FIX: Reset transform so html2canvas sees 1080x1350 pixels 1:1
     poster.style.transform = "none";
@@ -928,16 +928,16 @@ async function downloadImage() {
         link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
         
-        btn.innerText = "Sparad! ✨";
+        btn.innerText = "Succees! Bild nedladdad.";
     } catch (err) {
         console.error(err);
-        btn.innerText = "Error!";
+        btn.innerText = "Error vid nedladdning, Errorkod 444";
     } finally {
         // Restore Laptop View
         poster.style.transform = originalTransform;
         poster.style.position = "relative";
         poster.style.zIndex = "1";
-        setTimeout(() => btn.innerText = "Ladda ner som bild", 2000);
+        setTimeout(() => btn.innerText = "Ladda ner som bild", 3000);
     }
 }
 </script>
