@@ -419,7 +419,7 @@
     .input-section { overflow: hidden; border-left: 3px solid var(--accent); padding-left: 12px; }
 
     .btn { margin-top: 10px; width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-weight: 700; cursor: pointer; transition: 0.2s var(--easing); }
-    .save-week-btn { background: var(--success); margin-top: 15px; }
+    .save-week-btn { background: var(--success); margin-top: 15px; background-color: #007aff;}
 
     /* --- PREVIEW --- */
     .preview { display: flex; justify-content: center; align-items: center; background: #d1d1d6; padding: 40px; height: 100vh; box-sizing: border-box; }
@@ -509,6 +509,72 @@
     .custom-dropdown.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .dropdown-item { padding: 10px 12px; font-size: 14px; cursor: pointer; }
     .dropdown-item:hover { background: #f2f2f7; color: var(--accent); }
+
+
+    input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  background: #e5e5ea;
+  border-radius: 3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border: 0.5px solid #d1d1d6;
+  margin-top: -7px;
+}
+.sticker-container {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    z-index: 100;
+}
+
+.sticker-container img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none; /* Let the container handle mouse events */
+}
+
+.sticker-controls {
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    display: none;
+    gap: 5px;
+}
+
+.sticker-container:hover .sticker-controls {
+    display: flex;
+}
+
+.sticker-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sticker-btn.delete { color: var(--danger); }
   </style>
 </head>
 <body>
@@ -558,11 +624,20 @@
     <input type="color" id="color" value="#f1c232">
     <label>Veckonummer</label>
     <input type="number" id="week" value="0">
+    <label>Textstorlek (Schema)</label>
+<div class="slider-container" style="margin-top: 8px;">
+  <input type="range" id="fontSizeSlider" min="16" max="40" value="24" style="cursor: pointer;">
+  <div style="font-size: 11px; color: #8e8e93; display: flex; justify-content: space-between; margin-top: 4px;">
+    <span>Liten</span>
+    <span id="fontSizeDisplay">24px</span>
+    <span>Stor</span>
+  </div>
+</div>
 
     <div id="daysSettings" style="margin-top: 20px;"></div>
     <div id="addButtons" style="margin-top: 10px;"></div>
     
-    <button class="btn" onclick="downloadImage()" style="background: #1c1c1e; margin-bottom: 20px;">Ladda ner som bild</button>
+    <button class="btn" onclick="openDownloadConfirmModal()" style="background: #007aff; margin-bottom: 20px;">Ladda ner som bild</button>
 
     <div class="archive-container">
         <h3>Mina mappar (Arkiv)</h3>
@@ -573,15 +648,18 @@
   </div>
 
   <div class="preview">
-    <div id="poster">
-      <div class="title" style="text-align: center;">
-        <div style="font-size: 40px; font-weight: 700;">Fritidsgården</div>
-        <div class="mingos">MINGOS</div>
-        <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 0</div>
-      </div>
-      <div class="schedule" id="schedule"></div>
+  <div id="poster">
+    <div id="drop-zone-hint" style="position: absolute; inset: 0; pointer-events: none; border: 4px dashed transparent; transition: 0.3s; border-radius: 20px; z-index: 0;"></div>
+    
+    <div class="title" style="text-align: center; position: relative; z-index: 1;">
+      <div style="font-size: 40px; font-weight: 700;">Fritidsgården</div>
+      <div class="mingos">MINGOS</div>
+      <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 0</div>
     </div>
-  </div>
+
+    <div class="schedule" id="schedule" style="position: relative; z-index: 1;"></div>
+    
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -709,6 +787,94 @@ function saveToArchive() {
     renderArchive();
     closeModal();
 }
+
+/* --- STICKER ENGINE (Drag, Drop, Edit Images) --- */
+const poster = document.getElementById('poster');
+
+// 1. Handle File Drops
+poster.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    document.getElementById('drop-zone-hint').style.borderColor = 'var(--accent)';
+});
+
+poster.addEventListener('dragleave', () => {
+    document.getElementById('drop-zone-hint').style.borderColor = 'transparent';
+});
+
+poster.addEventListener('drop', (e) => {
+    e.preventDefault();
+    document.getElementById('drop-zone-hint').style.borderColor = 'transparent';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => createSticker(event.target.result, e.offsetX, e.offsetY);
+        reader.readAsDataURL(files[0]);
+    }
+});
+
+function createSticker(src, x, y) {
+    const container = document.createElement('div');
+    container.className = 'sticker-container';
+    container.style.left = (x - 100) + 'px';
+    container.style.top = (y - 100) + 'px';
+    container.style.width = '200px';
+    container.dataset.rotation = 0;
+
+    container.innerHTML = `
+        <div class="sticker-controls">
+            <button class="sticker-btn rotate" title="Rotera">🔄</button>
+            <button class="sticker-btn scale-up" title="Större">+</button>
+            <button class="sticker-btn scale-down" title="Mindre">-</button>
+            <button class="sticker-btn delete" title="Radera">✕</button>
+        </div>
+        <img src="${src}">
+    `;
+
+    poster.appendChild(container);
+
+    // Make Draggable
+    let isDragging = false;
+    let startX, startY;
+
+    container.onmousedown = (e) => {
+        if (e.target.classList.contains('sticker-btn')) return;
+        isDragging = true;
+        startX = e.clientX - container.offsetLeft;
+        startY = e.clientY - container.offsetTop;
+        container.style.zIndex = 1000;
+    };
+
+    window.onmousemove = (e) => {
+        if (!isDragging) return;
+        container.style.left = (e.clientX - startX) + 'px';
+        container.style.top = (e.clientY - startY) + 'px';
+    };
+
+    window.onmouseup = () => {
+        isDragging = false;
+        container.style.zIndex = 100;
+    };
+
+    // Button Logic
+    container.querySelector('.rotate').onclick = () => {
+        let rot = (parseInt(container.dataset.rotation) + 15) % 360;
+        container.dataset.rotation = rot;
+        container.style.transform = `rotate(${rot}deg)`;
+    };
+
+    container.querySelector('.scale-up').onclick = () => {
+        container.style.width = (parseInt(container.style.width) + 20) + 'px';
+    };
+
+    container.querySelector('.scale-down').onclick = () => {
+        container.style.width = (parseInt(container.style.width) - 20) + 'px';
+    };
+
+    container.querySelector('.delete').onclick = () => container.remove();
+}
+
+
 
 function renderArchive() {
     const container = document.getElementById('archiveList');
@@ -873,35 +1039,66 @@ window.onclick = (e) => {
 
 function renderSchedule() {
   const s = document.getElementById('schedule');
+  const fontSize = document.getElementById('fontSizeSlider').value; // Get value from slider
   s.innerHTML = '';
+  
   const sortedDays = [...days].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  
   sortedDays.forEach(d => {
     let parts = [];
     if (d.showAfternoon) parts.push(`<strong>${d.afterLabel}</strong><br>${d.afterText.replace(/\n/g, '<br>')}`);
     if (d.showEvening) parts.push(`<strong>${d.eveLabel}</strong><br>${d.eveText.replace(/\n/g, '<br>')}`);
+    
+    // We apply the font-size directly to the style attribute of each cell
     s.innerHTML += `
     <div class="row">
-      <div class="cell day-cell">${d.name}</div>
-      <div class="cell">${d.time}</div>
-      <div class="cell">${parts.join('<br><br>')}</div>
+      <div class="cell day-cell" style="font-size: ${fontSize}px">${d.name}</div>
+      <div class="cell" style="font-size: ${fontSize}px">${d.time}</div>
+      <div class="cell" style="font-size: ${fontSize}px">${parts.join('<br><br>')}</div>
     </div>`;
   });
 }
 
+// Add this line inside your update() function
 function update() {
   document.documentElement.style.setProperty('--mingos-color', document.getElementById('color').value);
   document.getElementById('weekText').innerText = 'v. ' + document.getElementById('week').value;
-  renderSchedule();
+  
+  // Update the small px label next to the slider
+  const fontSize = document.getElementById('fontSizeSlider').value;
+  document.getElementById('fontSizeDisplay').innerText = fontSize + 'px';
+
+  renderSchedule(); // This now handles the font size internally
 }
+
+// Add the listener so the slider works in real-time
+document.getElementById('fontSizeSlider').oninput = update;
 
 document.getElementById('color').oninput = update;
 document.getElementById('week').oninput = update;
 init();
 
+/* --- DOWNLOAD WITH DOUBLE CHECK --- */
+function openDownloadConfirmModal() {
+  document.getElementById('modalTitle').innerText = "Dubbelkolla schemat!";
+  document.getElementById('modalBody').innerText = "Vänligen se över tider och aktiviteter en extra gång så att allt är rätt innan bilden skapas.";
+  
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  confirmBtn.className = "modal-btn confirm-save"; // Using green success style
+  confirmBtn.innerText = "Allt ser bra ut, ladda ner!";
+  
+  confirmBtn.onclick = () => {
+    closeModal();
+    downloadImage(); // The actual rendering logic
+  };
+  
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
 async function downloadImage() {
     const poster = document.getElementById('poster');
     const originalTransform = poster.style.transform;
-    const btn = document.querySelector('button[onclick="downloadImage()"]');
+    const btn = document.querySelector('button[onclick="openDownloadConfirmModal()"]');
 
     // Visual Feedback
     btn.innerText = "Förbereder bild...";
@@ -911,13 +1108,13 @@ async function downloadImage() {
     poster.style.position = "fixed";
     poster.style.top = "0";
     poster.style.left = "0";
-    poster.style.zIndex = "-1000"; // Hide it behind everything while capturing
+    poster.style.zIndex = "-1000"; 
 
     try {
         const canvas = await html2canvas(poster, {
             width: 1080,
             height: 1350,
-            scale: 1, // Fixes resolution on lower-res screens
+            scale: 1, 
             useCORS: true,
             backgroundColor: "#ffffff",
             logging: false
@@ -928,15 +1125,16 @@ async function downloadImage() {
         link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
         
-        btn.innerText = "Succees! Bild nedladdad.";
+        btn.innerText = "Klart! Bild nedladdad.";
     } catch (err) {
         console.error(err);
-        btn.innerText = "Error vid nedladdning, Errorkod 444";
+        btn.innerText = "Error vid nedladdning (444)";
     } finally {
-        // Restore Laptop View
+        // Restore Layout
         poster.style.transform = originalTransform;
         poster.style.position = "relative";
         poster.style.zIndex = "1";
+        
         setTimeout(() => btn.innerText = "Ladda ner som bild", 3000);
     }
 }
