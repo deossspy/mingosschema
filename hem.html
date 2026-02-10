@@ -16,6 +16,24 @@
       --glass-border: rgba(255, 255, 255, 0.6);
       --ios-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     }
+
+
+
+/* Style for the dropped images in the schedule */
+.schedule-img {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-top: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Drag & Drop Visual Hint */
+.cell.drag-over {
+    background: rgba(0, 122, 255, 0.05);
+    border: 2px dashed var(--accent);
+}
     
     html { scroll-behavior: smooth; }
 
@@ -38,6 +56,8 @@
         radial-gradient(circle at 50% 50%, #f5f5f7 0%, #d1d1d6 100%);
       filter: blur(60px);
     }
+
+    
 
     /* --- GLASS LOCK SCREEN --- */
     #lock-screen {
@@ -537,7 +557,7 @@
     <label>Färgtema</label>
     <input type="color" id="color" value="#f1c232">
     <label>Veckonummer</label>
-    <input type="number" id="week" value="6">
+    <input type="number" id="week" value="0">
 
     <div id="daysSettings" style="margin-top: 20px;"></div>
     <div id="addButtons" style="margin-top: 10px;"></div>
@@ -557,7 +577,7 @@
       <div class="title" style="text-align: center;">
         <div style="font-size: 40px; font-weight: 700;">Fritidsgården</div>
         <div class="mingos">MINGOS</div>
-        <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 6</div>
+        <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 0</div>
       </div>
       <div class="schedule" id="schedule"></div>
     </div>
@@ -879,11 +899,46 @@ document.getElementById('week').oninput = update;
 init();
 
 async function downloadImage() {
-  const c = await html2canvas(document.getElementById('poster'), { scale: 2, useCORS: true });
-  const a = document.createElement('a');
-  a.download = `mingos_v${document.getElementById('week').value}.png`;
-  a.href = c.toDataURL('image/png');
-  a.click();
+    const poster = document.getElementById('poster');
+    const originalTransform = poster.style.transform;
+    const btn = document.querySelector('button[onclick="downloadImage()"]');
+
+    // Visual Feedback
+    btn.innerText = "Bereder för Instagram...";
+    
+    // THE FIX: Reset transform so html2canvas sees 1080x1350 pixels 1:1
+    poster.style.transform = "none";
+    poster.style.position = "fixed";
+    poster.style.top = "0";
+    poster.style.left = "0";
+    poster.style.zIndex = "-1000"; // Hide it behind everything while capturing
+
+    try {
+        const canvas = await html2canvas(poster, {
+            width: 1080,
+            height: 1350,
+            scale: 1, // Fixes resolution on lower-res screens
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            logging: false
+        });
+
+        const link = document.createElement('a');
+        link.download = `Mingos_v${document.getElementById('week').value}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        
+        btn.innerText = "Sparad! ✨";
+    } catch (err) {
+        console.error(err);
+        btn.innerText = "Error!";
+    } finally {
+        // Restore Laptop View
+        poster.style.transform = originalTransform;
+        poster.style.position = "relative";
+        poster.style.zIndex = "1";
+        setTimeout(() => btn.innerText = "Ladda ner som bild", 2000);
+    }
 }
 </script>
 
