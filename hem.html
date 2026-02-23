@@ -778,11 +778,11 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 const defaultWeeklySchedule = {
-  'Måndag': 'Stängt', 'Tisdag': '15:20 - 20:30', 'Onsdag': '19:00 - 20:30',
-  'Torsdag': '14:40 - 20:30', 'Fredag': '19:00 - 22:30', 'Lördag': 'Stängt', 'Söndag': 'Stängt'
+  'Måndag': 'STÄNGT', 'Tisdag': '15:20 - 20:30', 'Onsdag': '19:00 - 20:30',
+  'Torsdag': '14:40 - 20:30', 'Fredag': '19:00 - 22:30', 'Lördag': 'STÄNGT', 'Söndag': 'STÄNGT'
 };
 const order = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'];
-const commonTimes = ["14:40 - 20:30", "15:20 - 20:30", "19:00 - 22:30", "Stängt"];
+const commonTimes = ["14:40 - 20:30", "15:20 - 20:30", "19:00 - 22:30", "STÄNGT"];
 let days = [];
 let dayToDelete = null;
 
