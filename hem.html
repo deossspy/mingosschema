@@ -17,6 +17,46 @@
       --ios-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     }
 
+    @keyframes pulse-suggestion {
+  0% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7); transform: scale(1); }
+  70% { box-shadow: 0 0 0 15px rgba(0, 122, 255, 0); transform: scale(1.05); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); transform: scale(1); }
+}
+
+.pulse-active {
+  animation: pulse-suggestion 2s infinite;
+}
+/* --- DYNAMIC BACKGROUND ENGINE --- */
+.bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 0% 0%, rgba(var(--primary-rgb), 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 100% 100%, rgba(var(--primary-rgb), 0.1) 0%, transparent 50%),
+              #050505;
+  transition: background 0.8s var(--easing);
+}
+
+.bg-orb {
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: var(--primary);
+  filter: blur(140px);
+  opacity: 0.25; /* Increased opacity for more "vibe" */
+  transition: background 0.8s var(--easing), transform 10s infinite alternate;
+  animation: floatOrb 20s infinite alternate ease-in-out;
+}
+
+@keyframes floatOrb {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-10%, 15%) scale(1.1); }
+}
+
+
 
 
 /* Style for the dropped images in the schedule */
@@ -620,6 +660,10 @@ input[type=range]::-webkit-slider-thumb {
 <div class="layout">
   <div class="controls">
     <h2>MINGOS Schema</h2>
+    <div style="font-size: 11px; font-weight: 800; color: var(--success); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; gap: 5px;">
+  <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+  Senast uppdaterad: 2026-02-23
+</div>
     <label>Färgtema</label>
     <input type="color" id="color" value="#f1c232">
     <label>Veckonummer</label>
