@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <title>MINGOS Schema</title>
+  <title>MINGOS Schema v2.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23f1c232%22/><text y=%22.9em%22 x=%22.15em%22 font-size=%2270%22 font-weight=%22900%22 fill=%22white%22 font-family=%22sans-serif%22>M</text></svg>">
   
   <style>
@@ -10,102 +10,89 @@
       --mingos-color: #f1c232; 
       --accent: #007aff;
       --easing: cubic-bezier(0.34, 1.56, 0.64, 1);
-      --danger: #ff3b30;
-      --success: #34c759;
-      --glass: rgba(255, 255, 255, 0.4);
-      --glass-border: rgba(255, 255, 255, 0.6);
-      --ios-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+      --danger: #ff453a;
+      --success: #32d74b;
+      
+      /* Dark Mode Variables */
+      --bg-dark: #09090b;
+      --surface: rgba(24, 24, 27, 0.6);
+      --surface-hover: rgba(39, 39, 42, 0.8);
+      --border: rgba(255, 255, 255, 0.1);
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --glass: rgba(15, 15, 18, 0.7);
     }
 
-    @keyframes pulse-suggestion {
-  0% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7); transform: scale(1); }
-  70% { box-shadow: 0 0 0 15px rgba(0, 122, 255, 0); transform: scale(1.05); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); transform: scale(1); }
-}
+    /* --- CUSTOM SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
-.pulse-active {
-  animation: pulse-suggestion 2s infinite;
-}
-/* --- DYNAMIC BACKGROUND ENGINE --- */
-.bg-gradient {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: radial-gradient(circle at 0% 0%, rgba(var(--primary-rgb), 0.15) 0%, transparent 50%),
-              radial-gradient(circle at 100% 100%, rgba(var(--primary-rgb), 0.1) 0%, transparent 50%),
-              #050505;
-  transition: background 0.8s var(--easing);
-}
+    /* --- DYNAMIC BACKGROUND BUBBLES --- */
+    .bg-bubbles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
 
-.bg-orb {
-  position: absolute;
-  top: -10%;
-  right: -10%;
-  width: 800px;
-  height: 800px;
-  border-radius: 50%;
-  background: var(--primary);
-  filter: blur(140px);
-  opacity: 0.25; /* Increased opacity for more "vibe" */
-  transition: background 0.8s var(--easing), transform 10s infinite alternate;
-  animation: floatOrb 20s infinite alternate ease-in-out;
-}
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.4;
+      animation: float 20s infinite ease-in-out alternate;
+      transition: background 0.8s var(--easing);
+    }
 
-@keyframes floatOrb {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(-10%, 15%) scale(1.1); }
-}
+    .bubble-1 {
+      width: 600px; height: 600px;
+      background: var(--mingos-color);
+      top: -10%; left: -10%;
+    }
 
+    .bubble-2 {
+      width: 500px; height: 500px;
+      background: var(--mingos-color);
+      bottom: -10%; right: -10%;
+      animation-delay: -5s;
+      opacity: 0.2;
+    }
 
+    .bubble-3 {
+      width: 700px; height: 700px;
+      background: var(--mingos-color);
+      top: 30%; left: 40%;
+      animation-delay: -10s;
+      opacity: 0.25;
+    }
 
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(50px, 80px) scale(1.1); }
+      100% { transform: translate(-80px, 40px) scale(1.2); }
+    }
 
-/* Style for the dropped images in the schedule */
-.schedule-img {
-    width: 100%;
-    max-height: 250px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-top: 10px;
-    border: 1px solid rgba(0,0,0,0.1);
-}
-
-/* Drag & Drop Visual Hint */
-.cell.drag-over {
-    background: rgba(0, 122, 255, 0.05);
-    border: 2px dashed var(--accent);
-}
-    
     html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
-      background: #e5e5ea00;
-      color: #1c1c1e;
+      background: transparent;
+      color: var(--text-main);
       overflow: hidden;
       height: 100vh;
     }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: -50%;
-      z-index: -1;
-      background: 
-        radial-gradient(circle at 20% 30%, rgba(241, 194, 50, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(0, 122, 255, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, #f5f5f7 0%, #d1d1d6 100%);
-      filter: blur(60px);
-    }
-
-    
 
     /* --- GLASS LOCK SCREEN --- */
     #lock-screen {
       position: fixed;
       inset: 0;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(60px) saturate(200%);
-      -webkit-backdrop-filter: blur(60px) saturate(200%);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -114,20 +101,18 @@
     }
 
     .lock-card {
-      background: var(--glass);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      border: 1px solid var(--glass-border);
+      background: var(--surface);
+      border: 1px solid var(--border);
       padding: 40px;
-      border-radius: 50px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      border-radius: 40px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       width: 320px;
       text-align: center;
       animation: popIn 0.6s var(--easing);
     }
 
     .lock-card h2 { margin: 0 0 8px 0; font-weight: 800; letter-spacing: -1px; }
-    .lock-card p { color: #48484a; font-size: 14px; margin-bottom: 24px; }
+    .lock-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
 
     .passcode-dots {
       display: flex;
@@ -140,7 +125,7 @@
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.1);
       transition: all 0.3s var(--easing);
     }
     .dot.active { background: var(--mingos-color); transform: scale(1.3); box-shadow: 0 0 15px var(--mingos-color); }
@@ -157,7 +142,6 @@
     }
     .forgot-btn:hover { opacity: 1; text-decoration: underline; }
 
-    /* Hidden input to capture typing */
     #passcode-input {
       position: absolute;
       opacity: 0;
@@ -168,7 +152,7 @@
     #intro-screen {
       position: fixed;
       inset: 0;
-      background: #fff;
+      background: var(--bg-dark);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -177,23 +161,7 @@
       transition: opacity 0.8s var(--easing), visibility 0.8s;
     }
 
-    .intro-logo {
-      display: flex;
-      gap: 8px;
-    }
-
-    /* --- BUBBLY INTRO SCREEN --- */
-    #intro-screen {
-      position: fixed;
-      inset: 0;
-      background: #f5f5f7;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.8s var(--easing), visibility 0.8s;
-    }
+    .intro-logo { display: flex; gap: 8px; }
 
     .intro-char {
       font-size: 80px;
@@ -201,13 +169,14 @@
       color: var(--mingos-color);
       display: inline-block;
       animation: popIn 0.6s var(--easing) both;
-      text-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: color 0.3s;
     }
     .intro-subtext {
       margin-top: 20px;
       font-weight: 600;
       letter-spacing: 2px;
-      color: #8e8e93;
+      color: var(--text-muted);
       opacity: 0;
       animation: fadeIn 1s ease 0.8s forwards;
     }
@@ -222,27 +191,26 @@
       to { opacity: 1; transform: translateY(-10px); }
     }
 
-    .intro-hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
+    .intro-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
     /* --- LAYOUT --- */
     .layout { display: grid; grid-template-columns: 420px 1fr; height: 100vh; }
 
     .controls {
-      background: #fff;
+      background: var(--glass);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
       padding: 24px;
       overflow-y: auto;
-      border-right: 1px solid #e5e5ea;
+      border-right: 1px solid var(--border);
       height: 100vh;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      z-index: 10;
     }
 
-    .controls h2 { margin: 0 0 20px 0; font-weight: 800; }
+    .controls h2 { margin: 0 0 20px 0; font-weight: 800; color: #fff; }
 
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(15px); }
@@ -250,12 +218,11 @@
     }
 
     .day-settings {
-      background: #f9f9fb;
+      background: rgba(255, 255, 255, 0.03);
       border-radius: 18px;
       padding: 16px;
       margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.04);
-      border: 1px solid #eee;
+      border: 1px solid var(--border);
       position: relative;
       animation: slideIn 0.4s var(--easing) both;
     }
@@ -264,159 +231,44 @@
 
     .remove-btn {
       padding: 6px 12px; font-size: 11px; border-radius: 10px; border: none;
-      background: #ff3b3015; color: var(--danger); font-weight: 700; cursor: pointer;
+      background: rgba(255, 69, 58, 0.15); color: var(--danger); font-weight: 700; cursor: pointer;
       transition: all 0.2s ease;
     }
     .remove-btn:hover { background: var(--danger); color: #fff; }
 
-    label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #8e8e93; margin-top: 12px; }
+    label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-top: 12px; }
 
-    input, textarea {
+    select, input, textarea {
       width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px 12px;
-      border-radius: 12px; border: 1px solid #ddd; background: #fff; font-size: 14px;
+      border-radius: 12px; border: 1px solid var(--border); 
+      background: rgba(0, 0, 0, 0.3); color: var(--text-main); font-size: 14px;
       transition: all 0.2s var(--easing);
     }
-    input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.1); }
-
-    /* --- ARCHIVE GLASS --- */
-    .archive-container {
-        margin-top: auto;
-        padding: 25px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 35px;
-        border: 1px solid var(--glass-border);
-        margin-bottom: 20px;
-    }
-
-    .archive-item {
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(10px);
-        padding: 14px 18px;
-        border-radius: 20px;
-        border: 1px solid var(--glass-border);
-        margin-bottom: 10px;
-    }
-
-    /* The container for the animation */
-.delete-anim-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 18px;
-  z-index: 10;
-  backdrop-filter: blur(4px);
-}
-
-/* 1. Bubble away the old content */
-.bubble-out {
-  animation: bubbleOut 0.5s var(--easing) forwards;
-}
-
-/* 2. The Verified Badge Swoosh/Bubble in */
-.verified-badge {
-  width: 50px;
-  height: 50px;
-  background: var(--success);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 8px 20px rgba(52, 199, 89, 0.3);
-  transform: scale(0);
-  animation: bubbleInSwoosh 0.6s var(--easing) 0.2s forwards;
-}
-
-@keyframes bubbleOut {
-  0% { transform: scale(1); opacity: 1; filter: blur(0); }
-  100% { transform: scale(1.4); opacity: 0; filter: blur(10px); }
-}
-
-@keyframes bubbleInSwoosh {
-  0% { transform: scale(0) translateY(20px) rotate(-20deg); opacity: 0; }
-  60% { transform: scale(1.2) translateY(-5px) rotate(10deg); }
-  100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
-}
-
-    /* --- PREVIEW AREA --- */
-    .preview { 
-      display: flex; justify-content: center; align-items: center; 
-      padding: 40px; height: 100vh; box-sizing: border-box; 
-    }
-    
-    /* Instagram Portrait Ratio (4:5) */
-#poster { 
-  width: 1080px; 
-  height: 1350px; /* Locked height for consistency */
-  background: #fff; 
-  padding: 80px 60px; /* Extra breathing room */
-  border-radius: 0; /* Flat edges look better for full-bleed IG posts */
-  box-shadow: 0 30px 90px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  box-sizing: border-box;
-  transform-origin: center center;
-}
-
-/* Ensure the schedule area expands to fill the space nicely */
-.schedule { 
-  margin-top: 60px; 
-  flex-grow: 1; /* Pushes content to fill the 1350px height */
-  display: flex;
-  flex-direction: column;
-  border-top: 4px solid #1c1c1e; 
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1.2fr 1.5fr 4fr;
-  flex-grow: 1; /* Each row stretches equally */
-  align-items: center;
-}
-
-.cell { 
-  padding: 20px 16px; 
-  border-bottom: 2px solid #f2f2f7; 
-  font-size: 24px; 
-}
-
-/* Add a subtle watermark/footer for branding */
-#poster::after {
-  content: "Kontakta Josefina för mer info: 072-558 96 47 el. josefina.ros@skelleftea.se";
-  position: absolute;
-  bottom: 40px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #c7c7cc;
-  letter-spacing: 1px;
-}
+    select { appearance: none; cursor: pointer; }
+    select option { background: #1c1c1e; color: #fff; }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
+    input[type="color"] { padding: 2px; height: 40px; cursor: pointer; }
 
     /* --- MODAL GLASS --- */
     .modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.1); backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(20px);
       display: flex; justify-content: center; align-items: center;
       z-index: 10000; opacity: 0; pointer-events: none;
       transition: all 0.3s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal {
-      background: rgba(255,255,255,0.8); backdrop-filter: blur(30px);
+      background: var(--surface); backdrop-filter: blur(30px);
       padding: 35px; border-radius: 40px; width: 340px;
-      border: 1px solid #fff; box-shadow: 0 30px 60px rgba(0,0,0,0.1);
-      text-align: center;
+      border: 1px solid var(--border); box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+      text-align: center; color: var(--text-main);
     }
     .modal-overlay.active .modal { transform: scale(1); }
     .modal h3 { margin: 0 0 10px 0; font-weight: 800; }
     .modal-actions { display: flex; gap: 10px; margin-top: 20px;}
     .modal-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .modal-btn.cancel { background: #f2f2f7; color: #1c1c1e; }
+    .modal-btn.cancel { background: rgba(255,255,255,0.1); color: var(--text-main); }
     .modal-btn.confirm { background: var(--danger); color: white; }
     .modal-btn.confirm-save { background: var(--success); color: white; }
 
@@ -424,13 +276,14 @@
     .archive-container {
         margin-top: auto;
         padding: 20px;
-        background: #f2f2f7;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
         border-radius: 20px;
         margin-bottom: 20px;
     }
     .archive-container h3 { margin-top: 0; font-size: 16px; font-weight: 800; }
     .archive-item {
-        background: #fff;
+        background: rgba(255, 255, 255, 0.05);
         padding: 10px 14px;
         border-radius: 12px;
         display: flex;
@@ -439,18 +292,21 @@
         margin-bottom: 8px;
         font-weight: 600;
         font-size: 14px;
+        border: 1px solid rgba(255,255,255,0.05);
         animation: slideIn 0.3s var(--easing) both;
     }
     .archive-btns { display: flex; gap: 4px; }
     .arch-btn { padding: 5px 8px; border-radius: 8px; border: none; font-size: 10px; cursor: pointer; font-weight: 700; }
-    .arch-load { background: var(--accent); color: white; }
-    .arch-del { background: #ff3b3015; color: var(--danger); }
+    .arch-load { background: rgba(0, 122, 255, 0.2); color: #60a5fa; }
+    .arch-load:hover { background: var(--accent); color: white; }
+    .arch-del { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
+    .arch-del:hover { background: var(--danger); color: white; }
 
     /* --- BUTTONS & TOGGLES --- */
     .section-toggles { display: flex; gap: 8px; margin-top: 12px; }
     .toggle-btn {
-      flex: 1; padding: 10px; font-size: 12px; border-radius: 10px; border: 1px solid #ddd;
-      background: #fff; cursor: pointer; font-weight: 700; transition: 0.3s var(--easing);
+      flex: 1; padding: 10px; font-size: 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05); color: var(--text-main); cursor: pointer; font-weight: 700; transition: 0.3s var(--easing);
     }
     .toggle-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
@@ -458,213 +314,147 @@
     .input-section-wrapper.open { grid-template-rows: 1fr; opacity: 1; margin-top: 8px; }
     .input-section { overflow: hidden; border-left: 3px solid var(--accent); padding-left: 12px; }
 
-    .btn { margin-top: 10px; width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-weight: 700; cursor: pointer; transition: 0.2s var(--easing); }
-    .save-week-btn { background: var(--success); margin-top: 15px; background-color: #007aff;}
+    .btn { margin-top: 10px; width: 100%; padding: 14px; border-radius: 14px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-weight: 700; cursor: pointer; transition: 0.2s var(--easing); }
+    .btn:hover { background: rgba(255,255,255,0.2); }
+    .save-week-btn { background: var(--accent); margin-top: 15px; }
+    .save-week-btn:hover { background: #0062cc; }
 
     /* --- PREVIEW --- */
-    .preview { display: flex; justify-content: center; align-items: center; background: #d1d1d6; padding: 40px; height: 100vh; box-sizing: border-box; }
-    #poster { width: 1080px; background: #fff; padding: 60px; border-radius: 8px; box-shadow: 0 30px 90px rgba(0,0,0,0.2); transform: scale(0.65); }
+    .preview { display: flex; justify-content: center; align-items: center; padding: 40px; height: 100vh; box-sizing: border-box; position: relative; }
+    
+    /* Instagram Portrait Ratio (4:5) */
+    #poster { 
+      width: 1080px; 
+      height: 1350px;
+      background: #ffffff; /* Keep poster white for export! */
+      color: #1c1c1e; /* Keep poster text dark */
+      padding: 80px 60px; 
+      border-radius: 0px; 
+      box-shadow: 0 30px 90px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-sizing: border-box;
+      transform-origin: center center;
+      transform: scale(0.65);
+      flex-shrink: 0;
+    }
+
     .mingos { font-size: 160px; font-weight: 900; letter-spacing: 6px; color: var(--mingos-color); -webkit-text-stroke: 6px var(--mingos-color); text-shadow: 0 10px 24px rgba(0,0,0,.18); line-height: 1; margin: 10px 0; text-align: center; }
-    .schedule { margin-top: 48px; display: grid; grid-template-columns: 1.2fr 1.5fr 4fr; border-top: 3px solid #1c1c1e; }
-    .row { display: contents; }
-    .cell { padding: 24px 16px; border-bottom: 2px solid #eee; font-size: 22px; line-height: 1.4; }
-    .day-cell { font-weight: 800; font-size: 28px; }
+    .schedule { margin-top: 48px; border-top: 4px solid #1c1c1e; flex-grow: 1; position: relative; z-index: 1;}
+    
+    #poster::after {
+      content: "Kontakta Josefina för mer info: 072-558 96 47 el. josefina.ros@skelleftea.se";
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #8e8e93;
+      letter-spacing: 1px;
+    }
 
     /* AI SUGGESTION */
     .ai-suggestion {
       display: inline-flex; align-items: center; margin-top: 10px; padding: 6px 12px;
-      background: #007aff10; border: 1px solid #007aff30; border-radius: 30px; cursor: pointer;
+      background: rgba(0, 122, 255, 0.15); border: 1px solid rgba(0, 122, 255, 0.3); border-radius: 30px; cursor: pointer;
       animation: slideIn 0.5s var(--easing) 0.2s both;
       transition: all 0.3s var(--easing);
     }
-    /* --- ADAPTIVE LAYOUT --- */
-.layout { 
-  display: grid; 
-  grid-template-columns: minmax(320px, 420px) 1fr; /* Sidebar stays sane on wide screens */
-  height: 100vh; 
-  width: 100vw;
-}
-
-.controls {
-  background: #fff;
-  padding: 24px;
-  overflow-y: auto;
-  border-right: 1px solid #e5e5ea;
-  height: 100vh;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-}
-
-.preview { 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  background: #d1d1d6; 
-  height: 100vh; 
-  overflow: hidden; /* Prevents scrollbars from the scaled poster */
-  position: relative;
-}
-
-/* --- SMART SCALING POSTER --- */
-#poster { 
-  width: 1080px; 
-  background: #fff; 
-  padding: 60px; 
-  border-radius: 8px; 
-  box-shadow: 0 30px 90px rgba(0,0,0,0.2);
-  transform-origin: center center;
-  flex-shrink: 0;
-}
-
-/* Tablet/Laptop adjustment */
-@media (max-width: 1400px) {
-  #poster { transform: scale(0.5); }
-}
-
-@media (max-width: 1100px) {
-  #poster { transform: scale(0.4); }
-}
-
-/* Mobile fallback */
-@media (max-width: 800px) {
-  .layout { grid-template-columns: 1fr; }
-  .preview { display: none; } /* Hide preview on mobile edit mode */
-  .controls { width: 100%; }
-}
-    .ai-suggestion:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
+    .ai-suggestion:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,122,255,0.4); }
     .ai-suggestion svg { transition: 0.2s; }
     .ai-suggestion:hover svg { fill: #fff; }
     .ai-suggestion:hover .badge-text { color: #fff; }
-    .badge-text { font-size: 11px; font-weight: 800; color: #006ee6; margin-left: 6px; transition: 0.2s; }
+    .badge-text { font-size: 11px; font-weight: 800; color: #60a5fa; margin-left: 6px; transition: 0.2s; }
 
     .time-input-container { position: relative; }
     .custom-dropdown {
       position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
-      background: rgba(255,255,255,0.98); border-radius: 12px; border: 1px solid #ddd;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 4px;
+      background: var(--surface-hover); backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-top: 4px;
       opacity: 0; transform: translateY(-10px); pointer-events: none; transition: 0.3s var(--easing);
     }
     .custom-dropdown.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .dropdown-item { padding: 10px 12px; font-size: 14px; cursor: pointer; }
-    .dropdown-item:hover { background: #f2f2f7; color: var(--accent); }
-
+    .dropdown-item { padding: 10px 12px; font-size: 14px; cursor: pointer; color: var(--text-main); }
+    .dropdown-item:hover { background: rgba(255,255,255,0.1); color: var(--accent); }
 
     input[type=range] {
-  -webkit-appearance: none;
-  width: 100%;
-  background: transparent;
-}
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      border: none;
+      margin-top: -7px;
+    }
 
-input[type=range]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 6px;
-  background: #e5e5ea;
-  border-radius: 3px;
-}
+    .sticker-container { position: absolute; cursor: move; user-select: none; z-index: 100; }
+    .sticker-container img { display: block; width: 100%; height: auto; pointer-events: none; }
+    .sticker-controls { position: absolute; top: -30px; right: -30px; display: none; gap: 5px; }
+    .sticker-container:hover .sticker-controls { display: flex; }
+    .sticker-btn {
+      width: 24px; height: 24px; border-radius: 50%; border: none; background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; font-size: 12px; color: #000;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .sticker-btn.delete { color: var(--danger); }
 
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  border: 0.5px solid #d1d1d6;
-  margin-top: -7px;
-}
-.sticker-container {
-    position: absolute;
-    cursor: move;
-    user-select: none;
-    z-index: 100;
-}
-
-.sticker-container img {
-    display: block;
-    width: 100%;
-    height: auto;
-    pointer-events: none; /* Let the container handle mouse events */
-}
-
-.sticker-controls {
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    display: none;
-    gap: 5px;
-}
-
-.sticker-container:hover .sticker-controls {
-    display: flex;
-}
-
-.sticker-btn {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: none;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-/* Styling for the V2 Redirect Button */
-.v2-link {
-  text-decoration: none;
-  display: inline-block;
-  margin-top: -10px;
-  margin-bottom: 20px;
-}
-
-.v2-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  display: inline-flex;
+    /* --- ADAPTIVE LAYOUT --- */
+    @media (max-width: 1400px) { #poster { transform: scale(0.5); } }
+    @media (max-width: 1100px) { #poster { transform: scale(0.4); } }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      .preview { display: none; }
+      .controls { width: 100%; }
+    }
+    /* Update this existing section in your <style> tag */
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s var(--easing);
-  font-weight: 600;
+  z-index: 9999;
+  transition: opacity 0.8s var(--easing), visibility 0.8s;
+  overflow: hidden; /* Ensures bubbles don't bleed out during exit animation */
 }
 
-.v2-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.v2-badge {
-  background: var(--mingos-color);
-  color: #000;
-  padding: 2px 6px;
-  border-radius: 5px;
-  font-weight: 900;
-  font-size: 10px;
-  box-shadow: 0 0 10px rgba(241, 194, 50, 0.3);
-}
-
-/* Specific adjustments for Intro Screen Bubbles */
+/* Ensure bubbles inside the intro screen are visible against the dark background */
 #intro-screen .bubble {
-  opacity: 0.5;
-  filter: blur(100px); /* Slightly sharper than background for more "pop" */
-  pointer-events: none;
+  opacity: 0.1; /* Slightly higher opacity for a more dramatic entrance */
+  z-index: -1;   /* Keeps them behind the MINGOS text */
 }
-
-.sticker-btn.delete { color: var(--danger); }
   </style>
 </head>
 <body>
 
+<div class="bg-bubbles">
+  <div class="bubble bubble-1"></div>
+  <div class="bubble bubble-2"></div>
+  <div class="bubble bubble-3"></div>
+</div>
+
 <div id="intro-screen">
+  <div class="bubble bubble-1"></div>
+  <div class="bubble bubble-2"></div>
+  <div class="bubble bubble-3"></div>
+  
   <div class="intro-logo">
     <span class="intro-char" style="animation-delay: 0.1s">M</span>
     <span class="intro-char" style="animation-delay: 0.2s">I</span>
@@ -705,56 +495,60 @@ input[type=range]::-webkit-slider-thumb {
 <div class="layout">
   <div class="controls">
     <h2>MINGOS Schema</h2>
-    <a href="v2.html" target="_blank" class="v2-link">
-  <button class="v2-btn">
-    <span class="v2-badge">V2</span>
-    Gå till den nya versionen
-  </button>
-</a>
     <div style="font-size: 11px; font-weight: 800; color: var(--success); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; gap: 5px;">
-  <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
-  Senast uppdaterad: 2026-03-16, 11:24
-</div>
+      <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; box-shadow: 0 0 10px var(--success);"></span>
+      Senast uppdaterad: 2026-03-19, 21:27
+    </div>
+    
     <label>Färgtema</label>
     <input type="color" id="color" value="#f1c232">
+    
     <label>Veckonummer</label>
     <input type="number" id="week" value="0">
+
+    <label>Layout (Design)</label>
+    <select id="layoutSelect" onchange="update()">
+      <option value="standard">Klassisk Tabell</option>
+      <option value="cards">Moderna Kort</option>
+      <option value="minimal">Minimal / Centrerad</option>
+    </select>
+    
     <label>Textstorlek (Schema)</label>
-<div class="slider-container" style="margin-top: 8px;">
-  <input type="range" id="fontSizeSlider" min="16" max="40" value="24" style="cursor: pointer;">
-  <div style="font-size: 11px; color: #8e8e93; display: flex; justify-content: space-between; margin-top: 4px;">
-    <span>Liten</span>
-    <span id="fontSizeDisplay">24px</span>
-    <span>Stor</span>
-  </div>
-</div>
+    <div class="slider-container" style="margin-top: 8px;">
+      <input type="range" id="fontSizeSlider" min="16" max="40" value="24" style="cursor: pointer;">
+      <div style="font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 4px;">
+        <span>Liten</span>
+        <span id="fontSizeDisplay">24px</span>
+        <span>Stor</span>
+      </div>
+    </div>
 
     <div id="daysSettings" style="margin-top: 20px;"></div>
     <div id="addButtons" style="margin-top: 10px;"></div>
     
-    <button class="btn" onclick="openDownloadConfirmModal()" style="background: #007aff; margin-bottom: 20px;">Ladda ner som bild</button>
+    <button class="btn" onclick="openDownloadConfirmModal()" style="background: var(--accent); margin-bottom: 20px;">Ladda ner som bild</button>
 
     <div class="archive-container">
         <h3>Mina mappar (Arkiv)</h3>
         <div id="archiveList"></div>
         <button class="btn save-week-btn" onclick="openSaveModal()">Spara vecka i arkiv</button>
     </div>
-    <div style="font-size: 16px; font-weight: 100;" id="">deo inc.</div>
+    <div style="font-size: 12px; font-weight: 400; color: var(--text-muted); text-align: center; margin-top: auto;">deo inc.</div>
   </div>
 
   <div class="preview">
-  <div id="poster">
-    <div id="drop-zone-hint" style="position: absolute; inset: 0; pointer-events: none; border: 4px dashed transparent; transition: 0.3s; border-radius: 20px; z-index: 0;"></div>
-    
-    <div class="title" style="text-align: center; position: relative; z-index: 1;">
-      <div style="font-size: 40px; font-weight: 700;">Fritidsgården</div>
-      <div class="mingos">MINGOS</div>
-      <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 0</div>
-    </div>
+    <div id="poster">
+      <div id="drop-zone-hint" style="position: absolute; inset: 0; pointer-events: none; border: 4px dashed transparent; transition: 0.3s; z-index: 0;"></div>
+      
+      <div class="title" style="text-align: center; position: relative; z-index: 1;">
+        <div style="font-size: 40px; font-weight: 700;">Fritidsgården</div>
+        <div class="mingos">MINGOS</div>
+        <div style="font-size: 32px; font-weight: 600;" id="weekText">v. 0</div>
+      </div>
 
-    <div class="schedule" id="schedule" style="position: relative; z-index: 1;"></div>
-    
+      <div class="schedule" id="schedule"></div>
     </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -777,22 +571,16 @@ function setupLock() {
 
 passInput.addEventListener('input', (e) => {
   const val = e.target.value;
-  
-  // Update dots
-  dots.forEach((dot, i) => {
-    dot.classList.toggle('active', i < val.length);
-  });
+  dots.forEach((dot, i) => dot.classList.toggle('active', i < val.length));
 
   if (val.length === 4) {
     if (!masterCode) {
-      // Setting code for first time
       localStorage.setItem('mingos_passcode', val);
       masterCode = val;
       unlock();
     } else if (val === masterCode) {
       unlock();
     } else {
-      // Wrong code
       lockScreen.style.animation = 'shake 0.4s';
       setTimeout(() => lockScreen.style.animation = '', 400);
       passInput.value = '';
@@ -812,10 +600,8 @@ function showForgotCode() {
   document.getElementById('modalBody').innerText = "Koden sparas lokalt i din webbläsare. För att återställa koden måste du rensa webbplatsens data. Detta kommer även radera ditt arkiv.";
   const confirmBtn = document.getElementById('modalConfirmBtn');
   confirmBtn.innerText = "Rensa Allt";
-  confirmBtn.onclick = () => {
-    localStorage.clear();
-    location.reload();
-  };
+  confirmBtn.className = "modal-btn confirm";
+  confirmBtn.onclick = () => { localStorage.clear(); location.reload(); };
   document.getElementById('modalOverlay').classList.add('active');
 }
 
@@ -837,15 +623,9 @@ const commonTimes = ["14:40 - 20:30", "15:20 - 20:30", "19:00 - 22:30", "STÄNGT
 let days = [];
 let dayToDelete = null;
 
-function init() {
-  renderAddButtons();
-  renderArchive();
-}
+function init() { renderAddButtons(); renderArchive(); }
 
-/* --- MODAL LOGIC --- */
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
 
 function openRemoveModal(dayName) {
   dayToDelete = dayName;
@@ -869,11 +649,11 @@ function openSaveModal() {
   document.getElementById('modalOverlay').classList.add('active');
 }
 
-/* --- ARCHIVE LOGIC --- */
 function saveToArchive() {
     const weekNum = document.getElementById('week').value;
     const theme = document.getElementById('color').value;
-    const entry = { week: weekNum, theme: theme, days: JSON.parse(JSON.stringify(days)), id: Date.now() };
+    const layoutType = document.getElementById('layoutSelect').value; // Save selected layout
+    const entry = { week: weekNum, theme: theme, layout: layoutType, days: JSON.parse(JSON.stringify(days)), id: Date.now() };
     
     let archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
     archive.push(entry);
@@ -883,23 +663,13 @@ function saveToArchive() {
     closeModal();
 }
 
-/* --- STICKER ENGINE (Drag, Drop, Edit Images) --- */
+/* --- STICKER ENGINE --- */
 const poster = document.getElementById('poster');
-
-// 1. Handle File Drops
-poster.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    document.getElementById('drop-zone-hint').style.borderColor = 'var(--accent)';
-});
-
-poster.addEventListener('dragleave', () => {
-    document.getElementById('drop-zone-hint').style.borderColor = 'transparent';
-});
-
+poster.addEventListener('dragover', (e) => { e.preventDefault(); document.getElementById('drop-zone-hint').style.borderColor = 'var(--accent)'; });
+poster.addEventListener('dragleave', () => document.getElementById('drop-zone-hint').style.borderColor = 'transparent');
 poster.addEventListener('drop', (e) => {
     e.preventDefault();
     document.getElementById('drop-zone-hint').style.borderColor = 'transparent';
-    
     const files = e.dataTransfer.files;
     if (files.length > 0 && files[0].type.startsWith('image/')) {
         const reader = new FileReader();
@@ -915,7 +685,6 @@ function createSticker(src, x, y) {
     container.style.top = (y - 100) + 'px';
     container.style.width = '200px';
     container.dataset.rotation = 0;
-
     container.innerHTML = `
         <div class="sticker-controls">
             <button class="sticker-btn rotate" title="Rotera">🔄</button>
@@ -925,13 +694,9 @@ function createSticker(src, x, y) {
         </div>
         <img src="${src}">
     `;
-
     poster.appendChild(container);
 
-    // Make Draggable
-    let isDragging = false;
-    let startX, startY;
-
+    let isDragging = false, startX, startY;
     container.onmousedown = (e) => {
         if (e.target.classList.contains('sticker-btn')) return;
         isDragging = true;
@@ -939,53 +704,35 @@ function createSticker(src, x, y) {
         startY = e.clientY - container.offsetTop;
         container.style.zIndex = 1000;
     };
-
     window.onmousemove = (e) => {
         if (!isDragging) return;
         container.style.left = (e.clientX - startX) + 'px';
         container.style.top = (e.clientY - startY) + 'px';
     };
+    window.onmouseup = () => { isDragging = false; container.style.zIndex = 100; };
 
-    window.onmouseup = () => {
-        isDragging = false;
-        container.style.zIndex = 100;
-    };
-
-    // Button Logic
     container.querySelector('.rotate').onclick = () => {
         let rot = (parseInt(container.dataset.rotation) + 15) % 360;
         container.dataset.rotation = rot;
         container.style.transform = `rotate(${rot}deg)`;
     };
-
-    container.querySelector('.scale-up').onclick = () => {
-        container.style.width = (parseInt(container.style.width) + 20) + 'px';
-    };
-
-    container.querySelector('.scale-down').onclick = () => {
-        container.style.width = (parseInt(container.style.width) - 20) + 'px';
-    };
-
+    container.querySelector('.scale-up').onclick = () => container.style.width = (parseInt(container.style.width) + 20) + 'px';
+    container.querySelector('.scale-down').onclick = () => container.style.width = (parseInt(container.style.width) - 20) + 'px';
     container.querySelector('.delete').onclick = () => container.remove();
 }
-
-
 
 function renderArchive() {
     const container = document.getElementById('archiveList');
     const archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
-    container.innerHTML = archive.length ? '' : '<p style="color:#8e8e93; font-size:13px; margin: 10px 0;">Inga sparade veckor än.</p>';
-    
+    container.innerHTML = archive.length ? '' : '<p style="color:var(--text-muted); font-size:13px; margin: 10px 0;">Inga sparade veckor än.</p>';
     archive.slice().reverse().forEach(item => {
         const div = document.createElement('div');
         div.className = 'archive-item';
-        div.innerHTML = `
-            <div>v.${item.week}</div>
+        div.innerHTML = `<div>v.${item.week}</div>
             <div class="archive-btns">
                 <button class="arch-btn arch-load" onclick="loadArchive(${item.id})">Öppna</button>
                 <button class="arch-btn arch-del" onclick="deleteArchive(${item.id})">Radera</button>
-            </div>
-        `;
+            </div>`;
         container.appendChild(div);
     });
 }
@@ -994,16 +741,20 @@ function loadArchive(id) {
     const archive = JSON.parse(localStorage.getItem('mingos_archive') || '[]');
     const item = archive.find(i => i.id === id);
     if (!item) return;
-
+    
     days = JSON.parse(JSON.stringify(item.days));
     document.getElementById('week').value = item.week;
     document.getElementById('color').value = item.theme;
     
+    // Load layout if saved, otherwise default to standard
+    if (item.layout) {
+        document.getElementById('layoutSelect').value = item.layout;
+    } else {
+        document.getElementById('layoutSelect').value = 'standard';
+    }
+
     document.getElementById('daysSettings').innerHTML = '';
-    days.forEach(d => {
-        document.getElementById('daysSettings').appendChild(createDayCard(d));
-    });
-    
+    days.forEach(d => document.getElementById('daysSettings').appendChild(createDayCard(d)));
     renderAddButtons();
     update();
 }
@@ -1015,7 +766,6 @@ function deleteArchive(id) {
     renderArchive();
 }
 
-/* --- DAY MANAGEMENT --- */
 function confirmDelete() {
   const name = dayToDelete;
   const card = document.getElementById(`card-${name}`);
@@ -1035,9 +785,8 @@ function renderAddButtons() {
   order.forEach(dayName => {
     if (!days.find(d => d.name === dayName)) {
       const btn = document.createElement('button');
-      btn.className = 'btn secondary';
-      btn.style.background = '#e5e5ea';
-      btn.style.color = '#000';
+      btn.className = 'btn';
+      btn.style.background = 'rgba(255,255,255,0.05)';
       btn.style.marginBottom = '8px';
       btn.innerText = `+ Lägg till ${dayName}`;
       btn.onclick = () => addDay(dayName);
@@ -1048,12 +797,7 @@ function renderAddButtons() {
 
 function addDay(name) {
   const defaultAftLabel = (name === 'Torsdag') ? 'Tjejeftermiddag' : 'Eftermiddag';
-  
-  const newDay = {
-    name, time: defaultWeeklySchedule[name] || '',
-    showAfternoon: false, afterLabel: defaultAftLabel, afterText: '',
-    showEvening: false, eveLabel: 'Kväll', eveText: ''
-  };
+  const newDay = { name, time: defaultWeeklySchedule[name] || '', showAfternoon: false, afterLabel: defaultAftLabel, afterText: '', showEvening: false, eveLabel: 'Kväll', eveText: '' };
   days.push(newDay);
   document.getElementById('daysSettings').appendChild(createDayCard(newDay));
   renderAddButtons();
@@ -1067,7 +811,7 @@ function createDayCard(dayData) {
   const suggestedTime = defaultWeeklySchedule[dayData.name];
   div.innerHTML = `
     <div class="day-header">
-      <div style="font-size: 16px; font-weight: 800;">${dayData.name}</div>
+      <div style="font-size: 16px; font-weight: 800; color: #fff;">${dayData.name}</div>
       <button class="remove-btn" onclick="openRemoveModal('${dayData.name}')">Ta bort</button>
     </div>
     <label>Öppettider</label>
@@ -1078,7 +822,7 @@ function createDayCard(dayData) {
       </div>
     </div>
     <div class="ai-suggestion" onclick="selectTime('${dayData.name}', '${suggestedTime}')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="#007aff"><path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.7l-3.61.81.34 3.7L1 12l2.44 2.79-.34 3.69 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#60a5fa"><path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.7l-3.61.81.34 3.7L1 12l2.44 2.79-.34 3.69 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z"/></svg>
       <span class="badge-text">Föreslag: ${suggestedTime}</span>
     </div>
     <div class="section-toggles">
@@ -1116,8 +860,7 @@ function togglePart(name, prop, btn) {
 }
 
 function selectTime(name, time) {
-  const day = days.find(d => d.name === name);
-  day.time = time;
+  days.find(d => d.name === name).time = time;
   document.getElementById(`input-${name}`).value = time;
   update();
 }
@@ -1132,61 +875,100 @@ window.onclick = (e) => {
   if (e.target.id === 'modalOverlay') closeModal();
 }
 
+// THE NEW SCHEDULER LOGIC WITH LAYOUTS
 function renderSchedule() {
   const s = document.getElementById('schedule');
-  const fontSize = document.getElementById('fontSizeSlider').value; // Get value from slider
+  const fontSize = parseInt(document.getElementById('fontSizeSlider').value); 
+  const layout = document.getElementById('layoutSelect').value;
+  
   s.innerHTML = '';
   
   const sortedDays = [...days].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
-  
-  sortedDays.forEach(d => {
-    let parts = [];
-    if (d.showAfternoon) parts.push(`<strong>${d.afterLabel}</strong><br>${d.afterText.replace(/\n/g, '<br>')}`);
-    if (d.showEvening) parts.push(`<strong>${d.eveLabel}</strong><br>${d.eveText.replace(/\n/g, '<br>')}`);
-    
-    // We apply the font-size directly to the style attribute of each cell
-    s.innerHTML += `
-    <div class="row">
-      <div class="cell day-cell" style="font-size: ${fontSize}px">${d.name}</div>
-      <div class="cell" style="font-size: ${fontSize}px">${d.time}</div>
-      <div class="cell" style="font-size: ${fontSize}px">${parts.join('<br><br>')}</div>
-    </div>`;
-  });
+
+  if (layout === 'standard') {
+      s.style.display = 'grid';
+      s.style.gridTemplateColumns = '1.2fr 1.5fr 4fr';
+      
+      sortedDays.forEach(d => {
+        let parts = [];
+        if (d.showAfternoon) parts.push(`<strong>${d.afterLabel}</strong><br>${d.afterText.replace(/\n/g, '<br>')}`);
+        if (d.showEvening) parts.push(`<strong>${d.eveLabel}</strong><br>${d.eveText.replace(/\n/g, '<br>')}`);
+        
+        s.innerHTML += `<div style="display: contents;">
+          <div style="padding: 24px 16px; border-bottom: 2px solid #f2f2f7; font-size: ${fontSize * 1.2}px; font-weight: 800; color: #1c1c1e;">${d.name}</div>
+          <div style="padding: 24px 16px; border-bottom: 2px solid #f2f2f7; font-size: ${fontSize}px; color: #1c1c1e;">${d.time}</div>
+          <div style="padding: 24px 16px; border-bottom: 2px solid #f2f2f7; font-size: ${fontSize}px; color: #1c1c1e;">${parts.join('<br><br>')}</div>
+        </div>`;
+      });
+      
+  } else if (layout === 'cards') {
+      s.style.display = 'flex';
+      s.style.flexDirection = 'column';
+      s.style.gap = '16px';
+      s.style.paddingTop = '24px';
+      
+      sortedDays.forEach(d => {
+        let parts = [];
+        if (d.showAfternoon) parts.push(`<div style="margin-bottom:8px;"><strong>${d.afterLabel}</strong><br>${d.afterText.replace(/\n/g, '<br>')}</div>`);
+        if (d.showEvening) parts.push(`<div><strong>${d.eveLabel}</strong><br>${d.eveText.replace(/\n/g, '<br>')}</div>`);
+        
+        const noActivityText = '<span style="color: #a1a1aa; font-style: italic;">Inga aktiviteter</span>';
+        
+        s.innerHTML += `<div style="display: flex; background: #f9f9fb; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-left: 8px solid var(--mingos-color); border-right: 1px solid #eee; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
+            <div style="flex: 1; border-right: 2px solid #e5e5ea; padding-right: 20px; display: flex; flex-direction: column; justify-content: center;">
+                <div style="font-size: ${fontSize * 1.1}px; font-weight: 800; color: #1c1c1e;">${d.name}</div>
+                <div style="font-size: ${fontSize * 0.9}px; font-weight: 600; color: #8e8e93; margin-top: 4px;">🕒 ${d.time}</div>
+            </div>
+            <div style="flex: 2; padding-left: 20px; font-size: ${fontSize * 0.95}px; color: #1c1c1e; display: flex; flex-direction: column; justify-content: center;">
+                ${parts.length ? parts.join('') : noActivityText}
+            </div>
+        </div>`;
+      });
+      
+  } else if (layout === 'minimal') {
+      s.style.display = 'flex';
+      s.style.flexDirection = 'column';
+      s.style.gap = '24px';
+      s.style.paddingTop = '32px';
+      
+      sortedDays.forEach((d, index) => {
+        let parts = [];
+        if (d.showAfternoon) parts.push(`<strong>${d.afterLabel}</strong>: ${d.afterText.replace(/\n/g, ' ')}`);
+        if (d.showEvening) parts.push(`<strong>${d.eveLabel}</strong>: ${d.eveText.replace(/\n/g, ' ')}`);
+        
+        let borderBottom = index === sortedDays.length - 1 ? '' : 'border-bottom: 2px dashed #e5e5ea;';
+
+        s.innerHTML += `<div style="text-align: center; padding-bottom: 24px; ${borderBottom}">
+            <div style="font-size: ${fontSize * 1.2}px; font-weight: 900; color: var(--mingos-color); text-transform: uppercase; letter-spacing: 2px;">${d.name}</div>
+            <div style="font-size: ${fontSize}px; font-weight: 700; color: #1c1c1e; margin: 8px 0;">${d.time}</div>
+            <div style="font-size: ${fontSize * 0.9}px; color: #3a3a3c; line-height: 1.5;">
+                ${parts.length ? parts.join('<br>') : '<span style="color: #a1a1aa; font-style: italic;">Inga schemalagda aktiviteter</span>'}
+            </div>
+        </div>`;
+      });
+  }
 }
 
-// Add this line inside your update() function
 function update() {
   document.documentElement.style.setProperty('--mingos-color', document.getElementById('color').value);
   document.getElementById('weekText').innerText = 'v. ' + document.getElementById('week').value;
-  
-  // Update the small px label next to the slider
-  const fontSize = document.getElementById('fontSizeSlider').value;
-  document.getElementById('fontSizeDisplay').innerText = fontSize + 'px';
-
-  renderSchedule(); // This now handles the font size internally
+  document.getElementById('fontSizeDisplay').innerText = document.getElementById('fontSizeSlider').value + 'px';
+  renderSchedule(); 
 }
 
-// Add the listener so the slider works in real-time
 document.getElementById('fontSizeSlider').oninput = update;
-
 document.getElementById('color').oninput = update;
 document.getElementById('week').oninput = update;
 init();
 
-/* --- DOWNLOAD WITH DOUBLE CHECK --- */
+/* --- DOWNLOAD --- */
 function openDownloadConfirmModal() {
   document.getElementById('modalTitle').innerText = "Dubbelkolla schemat!";
   document.getElementById('modalBody').innerText = "Vänligen se över tider och aktiviteter en extra gång så att allt är rätt innan bilden skapas.";
-  
   const confirmBtn = document.getElementById('modalConfirmBtn');
-  confirmBtn.className = "modal-btn confirm-save"; // Using green success style
+  confirmBtn.className = "modal-btn confirm-save";
   confirmBtn.innerText = "Allt ser bra ut, ladda ner!";
-  
-  confirmBtn.onclick = () => {
-    closeModal();
-    downloadImage(); // The actual rendering logic
-  };
-  
+  confirmBtn.onclick = () => { closeModal(); downloadImage(); };
   document.getElementById('modalOverlay').classList.add('active');
 }
 
@@ -1194,11 +976,8 @@ async function downloadImage() {
     const poster = document.getElementById('poster');
     const originalTransform = poster.style.transform;
     const btn = document.querySelector('button[onclick="openDownloadConfirmModal()"]');
-
-    // Visual Feedback
     btn.innerText = "Förbereder bild...";
     
-    // THE FIX: Reset transform so html2canvas sees 1080x1350 pixels 1:1
     poster.style.transform = "none";
     poster.style.position = "fixed";
     poster.style.top = "0";
@@ -1207,29 +986,20 @@ async function downloadImage() {
 
     try {
         const canvas = await html2canvas(poster, {
-            width: 1080,
-            height: 1350,
-            scale: 1, 
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            logging: false
+            width: 1080, height: 1350, scale: 1, useCORS: true, backgroundColor: "#ffffff", logging: false
         });
-
         const link = document.createElement('a');
         link.download = `Mingos_v${document.getElementById('week').value}.png`;
         link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
-        
         btn.innerText = "Klart! Bild nedladdad.";
     } catch (err) {
         console.error(err);
         btn.innerText = "Error vid nedladdning (444)";
     } finally {
-        // Restore Layout
         poster.style.transform = originalTransform;
         poster.style.position = "relative";
         poster.style.zIndex = "1";
-        
         setTimeout(() => btn.innerText = "Ladda ner som bild", 3000);
     }
 }
